@@ -10,6 +10,12 @@ if (!noCors) {
     app.use(cors());
 }
 
+const noLogs = process.env.NOLOGS || false;
+if (!noLogs) {
+    const logger = require('morgan');
+    app.use(logger(':date[iso] ":method :url :status :res[content-length] - :response-time ms"'));
+}
+
 let fontDir = `${__dirname}/_output`;
 
 if (!fs.existsSync(fontDir)) {
@@ -38,4 +44,4 @@ app.get('/:fontfamilies/:range', (req,res)=>{
 })
 
 app.listen(port);
-console.log(`Font/Glyph server listening on port ${port}, cors ${noCors?'disabled':'enabled'}`);
+console.log(`Font/Glyph server listening on port ${port}, cors ${noCors?'disabled':'enabled'}, logging ${noLogs?'disabled':'enabled'}`);

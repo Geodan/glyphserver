@@ -23,10 +23,15 @@ if (!fs.existsSync(fontDir)) {
     process.exit(1);
 }
 
+app.set('etag', 'strong');
+
+let serverStartDate = new Date();
+
 app.get('/:fontfamilies/:range', (req,res)=>{
     let fontFamilies = req.params.fontfamilies.split(',');
     let range = req.params.range;
     let found = false;
+    res.append('Last-Modified', serverStartDate.toUTCString());
     for (let fontFamily of fontFamilies) {
         if (fs.existsSync(`${fontDir}/${fontFamily}`)) {
             let filename = `${fontDir}/${fontFamily}/${range}`;

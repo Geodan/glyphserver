@@ -10,6 +10,22 @@ if (!noCors) {
     app.use(cors());
 }
 
+function isNewRequest(req,res,next) {
+    let requestDateString = req.header('If-Modified-Since');
+    if (requestDateString) {
+        let requestDate = new Date(requestDateString);
+        if (requestDate >= serverStartDate) {
+            req.notModified = true;
+        }
+    }
+    if (!req.notModified) {
+        res.append('Last-Modified', serverStartDate.toISOString());
+    }
+    next();
+}
+
+app.use(isNewRequest);
+
 const noLogs = process.env.NOLOGS || false;
 if (!noLogs) {
     const logger = require('morgan');
@@ -23,15 +39,17 @@ if (!fs.existsSync(fontDir)) {
     process.exit(1);
 }
 
-app.set('etag', 'strong');
-
 let serverStartDate = new Date();
 
+
 app.get('/:fontfamilies/:range', (req,res)=>{
+    if (req.notModified) {
+        res.status(304).send('Not Modified');
+        return;
+    }
     let fontFamilies = req.params.fontfamilies.split(',');
     let range = req.params.range;
     let found = false;
-    res.append('Last-Modified', serverStartDate.toUTCString());
     for (let fontFamily of fontFamilies) {
         if (fs.existsSync(`${fontDir}/${fontFamily}`)) {
             let filename = `${fontDir}/${fontFamily}/${range}`;

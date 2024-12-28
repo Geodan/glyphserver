@@ -1,5 +1,6 @@
 const fs = require('fs');
 const express = require('express');
+const ensureFontsGenerated = require('./ensurefontsgenerated.js');
 
 const app = express();
 const port = process.env.PORT || 8484;
@@ -32,7 +33,9 @@ if (!noLogs) {
     app.use(logger(':date[iso] ":method :url :status :res[content-length] - :response-time ms"'));
 }
 
-let fontDir = `${__dirname}/_output`;
+let fontDir = `${__dirname}/fonts/_output`;
+
+ensureFontsGenerated(fontDir);
 
 if (!fs.existsSync(fontDir)) {
     console.error(`font directory not found (${fontDir})`);
